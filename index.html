@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+        <title>360 viewer</title>
+        <style>
+            body {
+                background-color: rgb(0, 0, 0);
+                margin: 0;
+            }
+            button {
+              background-color: #7226ff; 
+              border: none;
+              color: white;
+              border: 3px solid rgb(255, 255, 255);
+              text-align: center;
+              text-decoration: none;
+              cursor: pointer;
+              width: 100%;
+              margin-top: 1em;
+              padding: 1em;
+            }
+            input {
+              width: 100%;
+              margin-top: 1em;
+              padding: 1em;
+            }
+        </style>
+    </head>
+    <body>
+
+        <input type="text" id="imageUrl" name="imageUrl" >
+        <button id="setImageFromUrlButton">Set 360° image from URL</button>
+        <button id="setSampleImageButton">Set 360° sample image</button>
+
+        <div id="space"></div>
+
+        <script type="module">
+
+
+            import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.123/build/three.module.js';
+            import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.123/examples/jsm/controls/OrbitControls.js';
+
+            let camera;
+            let scene = new THREE.Scene();
+            let renderer;
+
+            const fov = 75;
+            const aspect = window.innerWidth / window.innerHeight;
+            const near = 1;
+            const far = 1000; 
+
+            let imageUrl = '';
+            const space = document.getElementById( 'space' );
+
+
+            let setImageFromUrlButton = document.getElementById('setImageFromUrlButton');
+            setImageFromUrlButton.onclick = function() {
+                document.getElementById('space').innerHTML = "";
+                imageUrl = document.getElementById("imageUrl").value;
+                startViewer();
+            }
+
+            let setSampleImageButton = document.getElementById('setSampleImageButton');
+            setSampleImageButton.onclick = function() {
+                document.getElementById('space').innerHTML = "";
+                imageUrl = 'https://cdn.eso.org/images/large/lasilla.jpg';
+                startViewer();
+            }
+
+            function startViewer() {
+            
+            	camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
+            	camera.position.z = 0.01;
+            
+            	const texture = new THREE.TextureLoader().load( imageUrl, render );
+            	texture.mapping = THREE.EquirectangularReflectionMapping;
+            
+            	scene.background = texture;
+            
+            	renderer = new THREE.WebGLRenderer();
+            	renderer.setPixelRatio( window.devicePixelRatio );
+            	renderer.setSize( window.innerWidth, window.innerHeight );
+            	space.appendChild( renderer.domElement );
+            
+            	window.addEventListener( 'resize', onWindowResize, false );
+            
+            	const controls = new OrbitControls( camera, renderer.domElement );
+            	controls.addEventListener( 'change', render );
+            
+            }
+
+            function onWindowResize() {
+            	camera.aspect = aspect;
+            	camera.updateProjectionMatrix();
+            	renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+
+
+            function render() {
+            	renderer.render( scene, camera );
+            }
+
+        </script>
+    </body>
+</html>
